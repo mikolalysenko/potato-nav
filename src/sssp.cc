@@ -6,6 +6,8 @@
 
 #include "csr.h"
 
+using namespace SPUD;
+
 int main(int argc, char** argv) {
   if(argc != 3) {
     return -1;
@@ -17,15 +19,15 @@ int main(int argc, char** argv) {
   auto numVerts = graph->numVerts();
   auto numArcs = graph->numArcs();
 
-  auto parent = std::vector<CSRVertexId>(numVerts);
+  auto parent = std::vector<VertexId>(numVerts);
   std::fill(parent.begin(), parent.end(), -1);
 
-  auto distance = std::vector<CSRWeight>(numVerts);
+  auto distance = std::vector<ArcWeight>(numVerts);
   std::fill(distance.begin(), distance.end(), INFINITY);
 
-  auto to_visit = std::vector<CSRVertexId>(numVerts);
-  int head = 0;
-  int tail = 0;
+  auto to_visit = std::vector<VertexId>(numVerts);
+  int64_t head = 0,
+          tail = 0;
 
   to_visit[tail++] = start;
   distance[start] = 0;
@@ -41,7 +43,7 @@ int main(int argc, char** argv) {
     *x = to_visit[head++];
     auto w = distance[v];
 
-    for(auto arc = graph->arcBegin(v); arc < graph->arcEnd(v); ++arc) {
+    for(auto arc=graph->arcBegin(v), end=graph->arcEnd(v); arc<end; ++arc) {
       auto u = arc->target;
       auto d = arc->weight + w;
 
@@ -55,7 +57,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  for(int i=0; i<numVerts; ++i) {
+  for(int64_t i=0; i<numVerts; ++i) {
     std::cout << parent[i] << ' ' << distance[i] << std::endl;
   }
 

@@ -1,54 +1,49 @@
-//Simple data structure for memory mapped sparse graphs
-#ifndef CSR_H
-#define CSR_H
+#pragma once
 
 #include <cstdint>
+#include "graph.h"
 
-typedef int64_t CSRInt;
-typedef int64_t CSRVertexId;
-typedef double  CSRWeight;
+namespace SPUD {
+  #pragma pack(1)
+  struct CSRHeader {
+    int64_t numVerts;
+    int64_t numArcs;
+  };
 
-#pragma pack(1)
-struct CSRHeader {
-  CSRInt numVerts;
-  CSRInt numArcs;
-};
+  struct CSRVertex {
+    int64_t offset;
+  };
 
-struct CSRVertex {
-  CSRInt offset;
-};
+  struct CSRArc {
+    VertexId  target;
+    ArcWeight weight;
+  };
+  #pragma pack()
 
-struct CSRArc {
-  CSRVertexId target;
-  CSRWeight weight;
-};
-#pragma pack()
+  struct CSRGraph {
+    CSRHeader* header;
+    CSRVertex* verts;
+    CSRArc*    arcs;
 
-struct CSRGraph {
-  CSRHeader* header;
-  CSRVertex* verts;
-  CSRArc*    arcs;
+    int     fd;
+    size_t  dataLength;
+    void*   data;
 
-  int     fd;
-  size_t  dataLength;
-  void*   data;
+    int64_t numVerts() const { return header->numVerts; }
+    int64_t numArcs() const { return header->numArcs; }
 
-  CSRInt numVerts() const { return header->numVerts; }
-  CSRInt numArcs() const { return header->numArcs; }
+    //Arc data for vertex i
+    CSRArc* arcBegin(VertexId i) { return arcs + verts[i].offset; }
+    CSRArc* arcEnd(VertexId i) { return arcs + verts[i+1].offset; }
 
-  //Arc data for vertex i
-  CSRArc* arcBegin(CSRInt i) { return arcs + verts[i].offset; }
-  CSRArc* arcEnd(CSRInt i) { return arcs + verts[i+1].offset; }
+    void transpose(CSRGraph* output);
 
-  void transpose(CSRGraph* output);
+    void close();
 
-  void close();
+    static CSRGraph* create(const char*, int64_t numVerts, int64_t numArcs);
+    static CSRGraph* read(const char*);
 
-  static CSRGraph* create(const char*, int64_t numVerts, int64_t numArcs);
-  static CSRGraph* read(const char*);
-
-private:
-  CSRGraph(int fd, void* data, size_t dataLength);
-};
-
-#endif
+  private:
+    CSRGraph(int fd, void* data, size_t dataLength);
+  };
+}

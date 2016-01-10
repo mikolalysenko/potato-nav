@@ -5,9 +5,11 @@
 
 #include "csr.h"
 
-struct Arc {
-  CSRInt s, t;
-  CSRWeight w;
+using namespace SPUD;
+
+struct InputArc {
+  VertexId s, t;
+  ArcWeight w;
 };
 
 int main(int argc, char** argv) {
@@ -16,14 +18,12 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  int numVerts;
+  int64_t numVerts;
   std::cin >> numVerts;
 
-  std::cout << "reading graph. num verts=" << numVerts << std::endl;
-
   //Read in arcs
-  Arc inArc;
-  std::vector<Arc> inArcs;
+  InputArc inArc;
+  std::vector<InputArc> inArcs;
   while(std::cin >> inArc.s >> inArc.t >> inArc.w) {
     inArcs.push_back(inArc);
   }
@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
   //Sort
   std::sort(inArcs.begin(), inArcs.end(),
-    [](const Arc& a, const Arc& b) {
+    [](const InputArc& a, const InputArc& b) {
       if(a.s < b.s) {
         return true;
       } else if(a.s == b.s) {
@@ -58,8 +58,8 @@ int main(int argc, char** argv) {
 
   //Scan vertices and copy to table
   std::cout << "scanning arcs" << std::endl;
-  CSRVertexId prev = -1;
-  for(CSRInt i=0; i<(CSRInt)inArcs.size(); ++i) {
+  VertexId prev = -1;
+  for(int64_t i=0; i<static_cast<int64_t>(inArcs.size()); ++i) {
     auto x = inArcs[i];
     while(prev < x.s) {
       verts[++prev].offset = i;
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
   }
 
   while(prev <= numVerts) {
-    verts[++prev].offset = (CSRInt)inArcs.size();
+    verts[++prev].offset = static_cast<int64_t>(inArcs.size());
   }
 
   //Close and flush to disk

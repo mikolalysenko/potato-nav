@@ -1,5 +1,4 @@
-#ifndef DYN_RXL_H
-#define DYN_RXL_H
+#pragma once
 
 #include <vector>
 
@@ -21,5 +20,3 @@ struct DRXLIndex {
   int64_t vertexPriority(CSRVertexId v);
 
 };
-
-#endif

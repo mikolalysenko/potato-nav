@@ -5,6 +5,8 @@
 
 #include "csr.h"
 
+using namespace SPUD;
+
 int main(int argc, char** argv) {
   if(argc != 3) {
     return -1;

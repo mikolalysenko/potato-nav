@@ -9,25 +9,27 @@
 
 #include "csr.h"
 
+using namespace SPUD;
+
 CSRGraph::CSRGraph(int fd_, void* data_, size_t dataLength_)
   : fd(fd_),
-    data(data_),
-    dataLength(dataLength_) {
-  auto ptr = (char*)data;
+    dataLength(dataLength_),
+    data(data_) {
+  auto ptr = static_cast<int8_t*>(data);
 
-  header = (CSRHeader*)ptr;
+  header = reinterpret_cast<CSRHeader*>(ptr);
 
   ptr += sizeof(CSRHeader);
-  verts = (CSRVertex*)ptr;
+  verts = reinterpret_cast<CSRVertex*>(ptr);
 
   ptr += sizeof(CSRVertex) * (header->numVerts+1);
-  arcs = (CSRArc*)ptr;
+  arcs = reinterpret_cast<CSRArc*>(ptr);
 }
 
 CSRGraph* CSRGraph::create(
   const char* path,
-  CSRInt numVerts,
-  CSRInt numArcs) {
+  int64_t numVerts,
+  int64_t numArcs) {
 
   auto mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
   auto fd = ::open(
@@ -59,9 +61,9 @@ CSRGraph* CSRGraph::create(
     return NULL;
   }
 
-  auto header = (CSRHeader*)data;
+  auto header = static_cast<CSRHeader*>(data);
   header->numVerts = numVerts;
-  header->numArcs = numArcs;
+  header->numArcs  = numArcs;
 
   return new CSRGraph(fd, data, size);
 }
@@ -96,31 +98,30 @@ CSRGraph* CSRGraph::read(const char* path) {
 
 void CSRGraph::transpose(CSRGraph* output) {
   auto nv = numVerts();
-  auto na = numArcs();
 
   auto oVerts = output->verts;
   memset(oVerts, 0, sizeof(CSRVertex) * (nv + 1));
 
-  for(CSRInt i=0; i<nv; ++i) {
+  for(int64_t i=0; i<nv; ++i) {
     for(auto arc=arcBegin(i); arc<arcEnd(i); ++arc) {
       oVerts[arc->target+1].offset++;
     }
   }
 
-  for(CSRInt i=1; i<=nv; ++i) {
+  for(int64_t i=1; i<=nv; ++i) {
     oVerts[i].offset += oVerts[i-1].offset;
   }
 
   auto oArcs = output->arcs;
-  for(CSRInt i=0; i<nv; ++i) {
+  for(int64_t i=0; i<nv; ++i) {
     for(auto arc=arcBegin(i); arc<arcEnd(i); ++arc) {
       auto oArc = &oArcs[oVerts[arc->target].offset++];
-      oArc->target = (CSRVertexId)i;
+      oArc->target = static_cast<VertexId>(i);
       oArc->weight = arc->weight;
     }
   }
 
-  for(CSRInt i=nv; i>0; --i) {
+  for(int64_t i=nv; i>0; --i) {
     oVerts[i].offset = oVerts[i-1].offset;
   }
 
