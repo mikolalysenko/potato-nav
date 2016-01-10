@@ -1,10 +1,8 @@
 potato-nav
 ==========
-A work in progress navigation/path planning library for planet sized graphs.
+A work in progress navigation/path planning library for planet sized graphs.  Heavily inspired by the following work:
 
-Heavily inspired by the following work:
-
-D. Delling, A. Goldberg, T. Pajor, R. Werneck. (2014) "[Robust Exact Distance Queries on Massive Networks](http://research-srv.microsoft.com/pubs/208867/complexTR-rev2.pdf)" MSR Technical Report
+* D. Delling, A. Goldberg, T. Pajor, R. Werneck. (2014) "[Robust Exact Distance Queries on Massive Networks](http://research-srv.microsoft.com/pubs/208867/complexTR-rev2.pdf)" MSR Technical Report
 
 This project is organized as a collection of small programs that perform various graph processing related tasks and communicate with some common file formats.
 
@@ -18,27 +16,37 @@ On a modern Unix, run `make` and the resulting programs will be dumped out to th
 
 This won't work on Windows or systems that don't have gcc/modern mmap features, but I am ok with this.
 
+## Workflow
+
+1. Convert input data into arc list
+1. Convert arc list into CSR file
+1. Generate a transposed CSR file
+1. Construct index from forward and transposed CSR file
+1. Query index to get fast network distances
+
+Up to querying, the first 4 steps in this process will eventually get wrapped into a shell script once everything is working.  The index files will be served on something like IPFS or WebTorrent and a JavaScript client for generating routes and querying the index will be written.
+
 ## Testing
 
 **TODO**
 
 # Tools
 
-## `arc2csr`
+### `arc2csr`
 Converts an ARC list into a CSR adjacency list.
 
-## `csr2arc`
+### `csr2arc`
 Converts a CSR adjacency list into an ARC list.
 
-## `transpose`
+### `transpose`
 Transposes a CSR list.
 
-## `sssp`
+### `sssp`
 Single Source Shortest Path: Computes all path distances from a single source node.
 
 # File formats
 
-## ARC: Arc list
+### ARC: Arc list
 
 A plain text file giving a list of arcs and their lengths.  The first line in the file is a single number giving the total number of vertices in the graph, followed by a list of directed arcs, each represnted as a `source target length` triple.  For example, a file with `n` vertices and arcs `(s0,t0), (s1,t1), ...` with respective arc lengths of `l0, l1, ...` would look like this:
 
@@ -50,13 +58,13 @@ s2 t2 l2
 ...
 ```
 
-## CSR: Compressed sparse adjacency list (binary)
+### CSR: Compressed sparse adjacency list (binary)
 
 A compressed binary adjacency list.  This is similar to an arc list, except that it uses less memory and can be directly `mmap`'d  and queried.
 
-## NAV: Navigation index (binary)
+### NAV: Navigation index (binary)
 
-**TODO**
+A compressed and query-able index for distance queries.
 
 # Bibliography
 
