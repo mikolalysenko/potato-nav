@@ -7,8 +7,6 @@
 #include "csr.h"
 
 namespace SPUD {
-  typedef int64_t Energy;
-
   struct DynamicLabel {
     VertexId  hub;
     ArcWeight weight;
@@ -21,17 +19,18 @@ namespace SPUD {
   struct DynamicIndex {
     std::vector<DynamicLabelSet> vertexLabels;
 
+    CSRGraph* forward;
+    CSRGraph* transpose;
+
+    int64_t numVerts() const { return (int64_t)vertexLabels.size(); }
+
     //Creates a dynamic index from a pair of CSR graphs
     static DynamicIndex* create(CSRGraph* adj, CSRGraph* transp);
 
     //Compute distance between two vertices
     ArcWeight distance(VertexId s, VertexId t) const;
 
-
   private:
-    CSRGraph* forward;
-    CSRGraph* transpose;
-
     DynamicIndex(
       CSRGraph* forward_,
       CSRGraph* transpose_) :
@@ -41,7 +40,5 @@ namespace SPUD {
           assert(forward_->numVerts() == transpose_->numVerts());
           assert(forward_->numArcs() == transpose_->numArcs());
         }
-
-    Energy addLabels(VertexId root);
   };
 }
