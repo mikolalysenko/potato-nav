@@ -11,9 +11,11 @@ namespace SPUD {
     int64_t counter;
     int64_t head;
     int64_t tail;
+    VertexId active;
 
     Priority* v_priority;
     VertexId* to_visit;
+    VertexId* parents;
     int64_t*  offset;
     int64_t*  last_visit;
 
@@ -22,8 +24,10 @@ namespace SPUD {
       counter(0),
       head(0),
       tail(0),
+      active(-1),
       v_priority(new Priority[numVerts]),
       to_visit(new VertexId[numVerts]),
+      parents(new VertexId[numVerts]),
       offset(new int64_t[numVerts]),
       last_visit(new int64_t[numVerts]) {
       memset(last_visit, 0, sizeof(int64_t) * numVerts);
@@ -44,6 +48,10 @@ namespace SPUD {
       return last_visit[v] >= counter;
     }
 
+    VertexId parent(VertexId v) const {
+      return parents[v];
+    }
+
     Priority priority(VertexId v) const {
       return v_priority[offset[v]];
     }
@@ -56,12 +64,16 @@ namespace SPUD {
       if(last_visit[v] < counter) {
         v_priority[tail] = p;
         to_visit[tail] = v;
-        offset[v]      = tail;
-        last_visit[v]  = counter;
+        parent[v] = active;
+        offset[v] = tail;
+        last_visit[v] = counter;
         tail++;
       } else {
         auto idx = offset[v];
-        v_priority[idx] = min(v_priority[idx], p);
+        if(v_priority[idx] < p) {
+          parent[v] = active;
+          v_priority[idx] = p;
+        }
       }
     }
 
@@ -69,9 +81,11 @@ namespace SPUD {
       Priority min_priority = v_priority[head];
       auto min_index = head;
 
-      //Unless our network is an expander, it is usually faster to do a linear
-      //scan than use a priority queue.  If this becomes a problem in bench
-      //marks, I'll switch it to use a heap later.
+      //Unless our network is something pathological like an expander, it is
+      //usually faster to do a linear scan than use a priority queue.  If this
+      //becomes a problem in bench marks, I'll switch it to use a heap later.
+      //
+      //Road networks aren't expanders usually.
       //
       for(auto i=head+1; i<tail; ++i) {
         auto p = v_priority[i];
@@ -100,9 +114,11 @@ namespace SPUD {
     template<typename T> void crawl(VertexId start, T visit) {
       counter++;
       head = tail = 0;
+      active = start;
       push(start, 0);
       while(!empty()) {
         auto top = pop();
+        active = top.first;
         visit(top.first, top.second);
       }
     }

@@ -13,7 +13,7 @@ namespace SPUD {
   };
 
   struct DynamicLabelSet {
-    std::vector<DynamicLabel> labels;
+    std::vector<DynamicLabel> inLabels, outLabels;
   };
 
   struct DynamicIndex {
