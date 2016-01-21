@@ -34,8 +34,9 @@ namespace SPUD {
     }
 
     ~Crawler() {
-      delete[] priority;
+      delete[] v_priority;
       delete[] to_visit;
+      delete[] parents;
       delete[] offset;
       delete[] last_visit;
     }
@@ -64,14 +65,14 @@ namespace SPUD {
       if(last_visit[v] < counter) {
         v_priority[tail] = p;
         to_visit[tail] = v;
-        parent[v] = active;
+        parents[v] = active;
         offset[v] = tail;
         last_visit[v] = counter;
         tail++;
       } else {
         auto idx = offset[v];
         if(v_priority[idx] < p) {
-          parent[v] = active;
+          parents[v] = active;
           v_priority[idx] = p;
         }
       }
@@ -95,20 +96,20 @@ namespace SPUD {
         }
       }
 
-      auto v = to_visit[i];
+      auto v = to_visit[min_index];
       auto h = to_visit[head];
 
-      to_visit[i]   = h;
-      v_priority[i] = v_priority[head];
-      offset[h]     = i;
+      to_visit[min_index] = h;
+      v_priority[min_index] = v_priority[head];
+      offset[h] = min_index;
 
-      to_visit[head]   = v;
+      to_visit[head] = v;
       v_priority[head] = min_priority;
-      offset[v]        = head;
+      offset[v] = head;
 
       head++;
 
-      return make_pair(v, min_priority);
+      return std::make_pair(v, min_priority);
     }
 
     template<typename T> void crawl(VertexId start, T visit) {

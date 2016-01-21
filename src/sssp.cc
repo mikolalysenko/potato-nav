@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "csr.h"
+#include "crawler.h"
 
 using namespace SPUD;
 
