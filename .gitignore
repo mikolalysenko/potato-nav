@@ -17,5 +17,6 @@ bin/arc2csr
 bin/csr2arc
 bin/transpose
 bin/sssp
+bin/gen-graph
 
 *.DS_Store

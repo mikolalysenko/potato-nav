@@ -7,7 +7,7 @@ BDIR=bin
 
 HEADERS=src/*.h
 
-TOOLS=$(BDIR)/arc2csr $(BDIR)/csr2arc $(BDIR)/transpose $(BDIR)/sssp
+TOOLS=$(BDIR)/arc2csr $(BDIR)/csr2arc $(BDIR)/transpose $(BDIR)/sssp $(BDIR)/gen-graph
 
 all: $(TOOLS)
 	echo "done"
@@ -27,6 +27,10 @@ $(BDIR)/transpose: $(ODIR)/csr.o $(ODIR)/transpose.o
 $(BDIR)/sssp: $(ODIR)/csr.o $(ODIR)/sssp.o
 	mkdir -p $(BDIR)
 	$(CC) -o $@ $(ODIR)/csr.o $(ODIR)/sssp.o $(CFLAGS)
+
+$(BDIR)/gen-graph: $(ODIR)/gen-graph.o
+	mkdir -p $(BDIR)
+	$(CC) -o $@ $(ODIR)/gen-graph.o $(CFLAGS)
 
 $(ODIR)/%.o: $(SDIR)/%.cc $(HEADERS)
 	mkdir -p $(ODIR)
