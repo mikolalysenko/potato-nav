@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <iostream>
 
 #include <stdio.h>
 
@@ -31,34 +32,42 @@ CSRGraph* CSRGraph::create(
   int64_t numVerts,
   int64_t numArcs) {
 
-  auto mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-  auto fd = ::open(
-    path,
-    O_RDWR|O_CREAT|O_TRUNC,
-    mode);
-  if(fd < 0) {
-    return NULL;
-  }
-
   //Compute size of file
   auto size =
     sizeof(CSRHeader) +
     sizeof(CSRVertex) * (numVerts+1) +
     sizeof(CSRArc)    * numArcs;
 
-  //reserve space
-  ftruncate(fd, size);
+  //Dummy fd
+  int fd = -1;
+  void* data = NULL;
 
-  //mmap that sucker
-  void* data = ::mmap(
-    NULL,
-    size,
-    PROT_READ|PROT_WRITE,
-    MAP_SHARED,
-    fd,
-    0);
-  if(data == MAP_FAILED) {
-    return NULL;
+  if(path) {
+    auto mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+    fd = ::open(
+      path,
+      O_RDWR|O_CREAT|O_TRUNC,
+      mode);
+    if(fd < 0) {
+      return NULL;
+    }
+
+    //reserve space
+    ftruncate(fd, size);
+
+    //mmap that sucker
+    data = ::mmap(
+      NULL,
+      size,
+      PROT_READ|PROT_WRITE,
+      MAP_SHARED,
+      fd,
+      0);
+    if(data == MAP_FAILED) {
+      return NULL;
+    }
+  } else {
+    data = malloc(size);
   }
 
   auto header = static_cast<CSRHeader*>(data);
@@ -129,9 +138,13 @@ void CSRGraph::transpose(CSRGraph* output) {
 }
 
 void CSRGraph::close() {
-  ::msync(data, dataLength, MS_SYNC);
-  ::munmap(data, dataLength);
-  ::close(fd);
+  if(fd < 0) {
+    free(data);
+  } else {
+    ::msync(data, dataLength, MS_SYNC);
+    ::munmap(data, dataLength);
+    ::close(fd);
+  }
 
   header      = NULL;
   verts       = NULL;
@@ -139,4 +152,20 @@ void CSRGraph::close() {
   fd          = -1;
   data        = NULL;
   dataLength  = 0;
+}
+
+void CSRGraph::print() {
+  auto numVerts = header->numVerts;
+
+  std::cout << numVerts << std::endl << std::flush;
+
+  for(int64_t i=0; i<numVerts; ++i) {
+    auto begin = verts[i].offset;
+    auto end = verts[i+1].offset;
+
+    for(int64_t j=begin; j<end; ++j) {
+      std::cout
+        << i << ' ' << arcs[j].target << ' ' << arcs[j].cost << std::endl;
+    }
+  }
 }

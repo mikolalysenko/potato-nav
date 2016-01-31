@@ -38,7 +38,10 @@ namespace SPUD {
 
     void transpose(CSRGraph* output);
 
+    void print();
     void close();
+
+    std::ostream& operator<<(std::ostream& in) const;
 
     static CSRGraph* create(const char*, int64_t numVerts, int64_t numArcs);
     static CSRGraph* read(const char*);

@@ -13,22 +13,7 @@ int main(int argc, char** argv) {
   }
 
   auto graph = CSRGraph::read(argv[1]);
-
-  auto numVerts = graph->header->numVerts;
-  auto arcs = graph->arcs;
-
-  std::cout << numVerts << std::endl << std::flush;
-
-  for(int64_t i=0; i<numVerts; ++i) {
-    auto begin = graph->verts[i].offset;
-    auto end = graph->verts[i+1].offset;
-
-    for(int64_t j=begin; j<end; ++j) {
-      std::cout
-        << i << ' ' << arcs[j].target << ' ' << arcs[j].cost << std::endl;
-    }
-  }
-
+  graph->print();
   graph->close();
 
   return 0;
