@@ -15,8 +15,8 @@ namespace SPUD {
   };
 
   struct CSRArc {
-    VertexId  target;
-    ArcWeight weight;
+    VertexId target;
+    Cost cost;
   };
   #pragma pack()
 

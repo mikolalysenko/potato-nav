@@ -30,8 +30,8 @@ template<typename T> bool labelsIntersect(const T& a, const T& b) {
 template<typename T> void insertLabel(
   T& labels,
   VertexId hub,
-  ArcWeight weight) {
-  DynamicLabel label = { hub, weight };
+  Cost cost) {
+  DynamicLabel label = { hub, cost };
   labels.insert(
     std::lower_bound(
       labels.begin(),
@@ -55,7 +55,7 @@ DynamicIndex* DynamicIndex::create(CSRGraph* adj, CSRGraph* transpose) {
         auto arcEnd = mat->arcEnd(v);
         for(auto arc=arcBegin; arc<arcEnd; ++arc) {
           auto u = arc->target;
-          auto l = arc->weight;
+          auto l = arc->cost;
           if(crawler->visited(u)) {
             continue;
           }

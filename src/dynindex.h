@@ -9,7 +9,7 @@
 namespace SPUD {
   struct DynamicLabel {
     VertexId  hub;
-    ArcWeight weight;
+    Cost cost;
   };
 
   struct DynamicLabelSet {
@@ -28,7 +28,7 @@ namespace SPUD {
     static DynamicIndex* create(CSRGraph* adj, CSRGraph* transp);
 
     //Compute distance between two vertices
-    ArcWeight distance(VertexId s, VertexId t) const;
+    Cost distance(VertexId s, VertexId t) const;
 
   private:
     DynamicIndex(

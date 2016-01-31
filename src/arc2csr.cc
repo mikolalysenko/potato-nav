@@ -9,7 +9,7 @@ using namespace SPUD;
 
 struct InputArc {
   VertexId s, t;
-  ArcWeight w;
+  Cost w;
 };
 
 int main(int argc, char** argv) {
@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
       verts[++prev].offset = i;
     }
     arcs[i].target = x.t;
-    arcs[i].weight = x.w;
+    arcs[i].cost = x.w;
   }
 
   while(prev < numVerts) {

@@ -13,7 +13,7 @@ namespace SPUD {
     int64_t tail;
     VertexId active;
 
-    Priority* v_priority;
+    Cost* v_cost;
     VertexId* to_visit;
     VertexId* parents;
     int64_t*  offset;
@@ -25,7 +25,7 @@ namespace SPUD {
       head(0),
       tail(0),
       active(-1),
-      v_priority(new Priority[numVerts]),
+      v_cost(new Cost[numVerts]),
       to_visit(new VertexId[numVerts]),
       parents(new VertexId[numVerts]),
       offset(new int64_t[numVerts]),
@@ -34,7 +34,7 @@ namespace SPUD {
     }
 
     ~Crawler() {
-      delete[] v_priority;
+      delete[] v_cost;
       delete[] to_visit;
       delete[] parents;
       delete[] offset;
@@ -53,8 +53,8 @@ namespace SPUD {
       return parents[v];
     }
 
-    Priority priority(VertexId v) const {
-      return v_priority[offset[v]];
+    Cost priority(VertexId v) const {
+      return v_cost[offset[v]];
     }
 
     bool empty() const {
@@ -63,7 +63,7 @@ namespace SPUD {
 
     void push(VertexId v, Priority p) {
       if(last_visit[v] < counter) {
-        v_priority[tail] = p;
+        v_cost[tail] = p;
         to_visit[tail] = v;
         parents[v] = active;
         offset[v] = tail;
@@ -71,15 +71,15 @@ namespace SPUD {
         tail++;
       } else {
         auto idx = offset[v];
-        if(v_priority[idx] < p) {
+        if(v_cost[idx] < p) {
           parents[v] = active;
-          v_priority[idx] = p;
+          v_cost[idx] = p;
         }
       }
     }
 
     std::pair<VertexId, Priority> pop() {
-      Priority min_priority = v_priority[head];
+      Priority min_priority = v_cost[head];
       auto min_index = head;
 
       //Unless our network is something pathological like an expander, it is
@@ -89,7 +89,7 @@ namespace SPUD {
       //Road networks aren't expanders usually.
       //
       for(auto i=head+1; i<tail; ++i) {
-        auto p = v_priority[i];
+        auto p = v_cost[i];
         if(p < min_priority) {
           min_priority = p;
           min_index    = i;
@@ -100,11 +100,11 @@ namespace SPUD {
       auto h = to_visit[head];
 
       to_visit[min_index] = h;
-      v_priority[min_index] = v_priority[head];
+      v_cost[min_index] = v_cost[head];
       offset[h] = min_index;
 
       to_visit[head] = v;
-      v_priority[head] = min_priority;
+      v_cost[head] = min_priority;
       offset[v] = head;
 
       head++;

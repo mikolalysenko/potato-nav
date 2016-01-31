@@ -117,7 +117,7 @@ void CSRGraph::transpose(CSRGraph* output) {
     for(auto arc=arcBegin(i); arc<arcEnd(i); ++arc) {
       auto oArc = &oArcs[oVerts[arc->target].offset++];
       oArc->target = static_cast<VertexId>(i);
-      oArc->weight = arc->weight;
+      oArc->cost = arc->cost;
     }
   }
 

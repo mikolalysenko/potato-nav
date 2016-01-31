@@ -4,5 +4,5 @@
 
 namespace SPUD {
   typedef int64_t VertexId;
-  typedef double  ArcWeight;
+  typedef float Cost;
 }

@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
     for(int64_t j=begin; j<end; ++j) {
       std::cout
-        << i << ' ' << arcs[j].target << ' ' << arcs[j].weight << std::endl;
+        << i << ' ' << arcs[j].target << ' ' << arcs[j].cost << std::endl;
     }
   }
 
