@@ -12,9 +12,15 @@ Once the preprocessing works well enough, it should be possible to take an index
 
 ## Building
 
-On a modern Unix, run `make` and the resulting programs will be dumped out to the `bin/` directory.  To do a full rebuild, run `make clean && make`.
+First install cmake, then run the following commands:
 
-This won't work on Windows or systems that don't have gcc/modern mmap features, but I am ok with this.
+```
+mkdir build
+cd build
+cmake ..
+```
+
+That will give you a Makefile which you can run using `make`. This project won't work on Windows or systems that don't have gcc/modern mmap features, but I am ok with this.
 
 ## Workflow
 
