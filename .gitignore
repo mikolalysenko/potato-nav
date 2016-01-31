@@ -11,12 +11,6 @@ pids
 logs
 results
 
-obj/*
-
-bin/arc2csr
-bin/csr2arc
-bin/transpose
-bin/sssp
-bin/gen-graph
+build/*
 
 *.DS_Store
