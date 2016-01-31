@@ -14,7 +14,6 @@ struct InputArc {
 
 int main(int argc, char** argv) {
   if(argc != 2) {
-    std::cout << "Please specify output file" << std::endl;
     return -1;
   }
 
@@ -28,10 +27,6 @@ int main(int argc, char** argv) {
     inArcs.push_back(inArc);
   }
 
-  std::cout
-    << "read in " << inArcs.size() << " arcs" << std::endl
-    << "sorting..." << std::endl;
-
   //Sort
   std::sort(inArcs.begin(), inArcs.end(),
     [](const InputArc& a, const InputArc& b) {
@@ -43,13 +38,10 @@ int main(int argc, char** argv) {
       return false;
     });
 
-  std::cout << "allocating graph" << std::endl;
-
   //Allocate graph
   auto graph = CSRGraph::create(argv[1], numVerts, inArcs.size());
 
   if(!graph) {
-    std::cout << "error allocating graph" << std::endl;
     return -1;
   }
 
@@ -57,7 +49,6 @@ int main(int argc, char** argv) {
   auto arcs  = graph->arcs;
 
   //Scan vertices and copy to table
-  std::cout << "scanning arcs" << std::endl;
   VertexId prev = -1;
   for(int64_t i=0; i<static_cast<int64_t>(inArcs.size()); ++i) {
     auto x = inArcs[i];
@@ -68,16 +59,13 @@ int main(int argc, char** argv) {
     arcs[i].weight = x.w;
   }
 
-  while(prev <= numVerts) {
+  while(prev < numVerts) {
     verts[++prev].offset = static_cast<int64_t>(inArcs.size());
   }
 
   //Close and flush to disk
-  std::cout << "flush results to disk" << std::endl;
   graph->close();
 
   //done
-  std::cout << "done!" << std::endl;
-
   return 0;
 }

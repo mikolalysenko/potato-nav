@@ -9,15 +9,12 @@ using namespace SPUD;
 
 int main(int argc, char** argv) {
   if(argc != 2) {
-    std::cout << "Please specify output file" << std::endl;
     return -1;
   }
 
   auto graph = CSRGraph::read(argv[1]);
 
   auto numVerts = graph->header->numVerts;
-  auto numArcs = graph->header->numArcs;
-
   auto arcs = graph->arcs;
 
   std::cout << numVerts << std::endl << std::flush;

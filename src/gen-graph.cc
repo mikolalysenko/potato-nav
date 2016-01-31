@@ -9,6 +9,9 @@ int main(int argc, char** argv) {
     return 0;
   }
 
+  //Seed rng
+  srand(time(NULL));
+
   int numVerts = atoi(argv[1]);
   int numArcs = atoi(argv[2]);
 
