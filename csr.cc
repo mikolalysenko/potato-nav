@@ -169,3 +169,45 @@ void CSRGraph::print() {
     }
   }
 }
+
+CSRGraph* CSRGraph::fromArcList(
+  const char* path,
+  int64_t numVerts,
+  int64_t numArcs,
+  Arc* arcs) {
+
+  //Sort arcs lexicographically
+  std::sort(arcs, arcs + numArcs,
+    [](const Arc& a, const Arc& b) {
+      if(a.source < b.source) {
+        return true;
+      } else if(a.source > b.source) {
+        return false;
+      }
+      return a.target < b.target;
+    });
+
+  //Allocate graph
+  auto graph = CSRGraph::create(path, numVerts, numArcs);
+  if(!graph) {
+    return NULL;
+  }
+
+  auto g_verts = graph->verts;
+  auto g_arcs  = graph->arcs;
+
+  //Scan vertices and copy to table
+  VertexId prev = -1;
+  for(int64_t i=0; i<numArcs; ++i) {
+    auto x = arcs[i];
+    while(prev < x.source) {
+      g_verts[++prev].offset = i;
+    }
+    g_arcs[i].target = x.target;
+    g_arcs[i].cost = x.cost;
+  }
+
+  while(prev < numVerts) {
+    g_verts[++prev].offset = static_cast<int64_t>(numArcs);
+  }
+}

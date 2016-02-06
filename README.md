@@ -22,6 +22,10 @@ cmake ..
 
 That will give you a Makefile which you can run using `make`. This project won't work on Windows or systems that don't have gcc/modern mmap features, but I am ok with this.
 
+## Testing
+
+Once all code objects are built, you can test the program using
+
 ## Workflow
 
 1. Convert input data into arc list

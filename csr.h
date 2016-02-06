@@ -43,6 +43,12 @@ namespace SPUD {
 
     std::ostream& operator<<(std::ostream& in) const;
 
+    //Converts an arc list into a CSR graph
+    static CSRGraph* fromArcList(
+      const char*,
+      int64_t numVerts,
+      int64_t numArcs,
+      Arc* arcs);
     static CSRGraph* create(const char*, int64_t numVerts, int64_t numArcs);
     static CSRGraph* read(const char*);
 
