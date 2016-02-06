@@ -1,3 +1,4 @@
+#include <cmath>
 #include <algorithm>
 #include <vector>
 #include <iostream>
@@ -9,11 +10,19 @@
 
 using namespace SPUD;
 
-template<typename T> bool labelsIntersect(const T& a, const T& b) {
+template<typename T> void printLabels(const T& v) {
+  for(auto l : v) {
+    std::cout << '(' << l.hub << ' ' << l.cost << ')' << ", ";
+  }
+}
+
+
+template<typename T> Cost hubDistance(const T& a, const T& b) {
   int64_t aSize = a.size();
   int64_t bSize = b.size();
   int64_t aPtr = 0;
   int64_t bPtr = 0;
+  Cost result = INFINITY;
   while(aPtr < aSize && bPtr < bSize) {
     auto aHead = a[aPtr].hub;
     auto bHead = b[bPtr].hub;
@@ -22,10 +31,12 @@ template<typename T> bool labelsIntersect(const T& a, const T& b) {
     } else if(aHead > bHead) {
       bPtr++;
     } else {
-      return true;
+      result = std::min(result, a[aPtr].cost + b[bPtr].cost);
+      aPtr++;
+      bPtr++;
     }
   }
-  return false;
+  return result;
 }
 
 template<typename T> void insertLabel(
@@ -33,6 +44,11 @@ template<typename T> void insertLabel(
   VertexId hub,
   Cost cost) {
   DynamicLabel label = { hub, cost };
+
+  std::cout << "\t\tbefore insert - ";
+  printLabels(labels);
+  std::cout << std::endl;
+
   labels.insert(
     std::lower_bound(
       labels.begin(),
@@ -42,15 +58,20 @@ template<typename T> void insertLabel(
         return a.hub < b.hub;
       }),
     label);
+
+  std::cout << "\t\tafter insert - ";
+  printLabels(labels);
+  std::cout << std::endl;
+
 }
 
 void DynamicIndex::print() {
   for(int64_t i=0; i<numVerts(); ++i) {
     std::cout << i << ':' << std::endl;
-    for(auto label : vertexLabels[i].inLabels) {
+    for(auto label : vertexLabels[i].outLabels) {
       std::cout << "\t-> " << label.hub << '\t' << label.cost << std::endl;
     }
-    for(auto label : vertexLabels[i].outLabels) {
+    for(auto label : vertexLabels[i].inLabels) {
       std::cout << "\t<- " << label.hub << '\t' << label.cost << std::endl;
     }
   }
@@ -62,7 +83,9 @@ DynamicIndex* DynamicIndex::create(CSRGraph* adj, CSRGraph* transpose) {
   Crawler crawler(index->numVerts());
 
   auto crawl = [&](auto matrix, auto start, auto visit) {
-    crawler.crawl(start, [&](VertexId v, Priority p) {
+    std::cout << "start: " << start << std::endl;
+    crawler.crawl(start, [&](VertexId v, Cost p) {
+      std::cout << "\tvisit: " << v << " @ " << p << std::endl;
       if(visit(v, p)) {
         auto arcBegin = matrix->arcBegin(v);
         auto arcEnd = matrix->arcEnd(v);
@@ -79,20 +102,23 @@ DynamicIndex* DynamicIndex::create(CSRGraph* adj, CSRGraph* transpose) {
   };
 
   auto addForwardLabels = [&](VertexId start) {
-    crawl(adj, start, [&](VertexId v, Priority p) {
-      if(labelsIntersect(index->vertexLabels[start].outLabels,
-                         index->vertexLabels[v].inLabels)) {
+    crawl(adj, start, [&](VertexId v, Cost p) {
+      std::cout << hubDistance(index->vertexLabels[start].outLabels,
+                     index->vertexLabels[v].inLabels) << std::endl;
+      if(hubDistance(index->vertexLabels[start].outLabels,
+                     index->vertexLabels[v].inLabels) <= p) {
         return false;
       }
+      std::cout << "insert label" << std::endl;
       insertLabel(index->vertexLabels[v].inLabels, start, p);
       return true;
     });
   };
 
   auto addBackwardLabels = [&](VertexId start) {
-    crawl(transpose, start, [&](VertexId v, Priority p) {
-      if(labelsIntersect(index->vertexLabels[start].inLabels,
-                         index->vertexLabels[v].outLabels)) {
+    crawl(transpose, start, [&](VertexId v, Cost p) {
+      if(hubDistance(index->vertexLabels[start].inLabels,
+                     index->vertexLabels[v].outLabels) <= p) {
         return false;
       }
       insertLabel(index->vertexLabels[v].outLabels, start, p);

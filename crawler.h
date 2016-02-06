@@ -3,9 +3,6 @@
 #include "graph.h"
 
 namespace SPUD {
-
-  typedef float Priority;
-
   struct Crawler {
     int64_t numVerts;
     int64_t counter;
@@ -61,7 +58,7 @@ namespace SPUD {
       return tail <= head;
     }
 
-    void push(VertexId v, Priority p) {
+    void push(VertexId v, Cost p) {
       if(last_visit[v] < counter) {
         v_cost[tail] = p;
         to_visit[tail] = v;
@@ -78,8 +75,8 @@ namespace SPUD {
       }
     }
 
-    std::pair<VertexId, Priority> pop() {
-      Priority min_priority = v_cost[head];
+    std::pair<VertexId, Cost> pop() {
+      Cost min_priority = v_cost[head];
       auto min_index = head;
 
       //Unless our network is something pathological like an expander, it is

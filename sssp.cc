@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 
   auto crawler = new Crawler(graph->numVerts());
 
-  crawler->crawl(start, [&](VertexId v, Priority w) {
+  crawler->crawl(start, [&](VertexId v, Cost w) {
     for(auto arc=graph->arcBegin(v), end=graph->arcEnd(v); arc<end; ++arc) {
       crawler->push(arc->target, arc->cost + w);
     }
