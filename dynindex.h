@@ -24,6 +24,8 @@ namespace SPUD {
 
     int64_t numVerts() const { return (int64_t)vertexLabels.size(); }
 
+    void print();
+
     //Creates a dynamic index from a pair of CSR graphs
     static DynamicIndex* create(CSRGraph* adj, CSRGraph* transp);
 

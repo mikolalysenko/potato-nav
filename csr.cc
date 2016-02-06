@@ -105,38 +105,6 @@ CSRGraph* CSRGraph::read(const char* path) {
   return new CSRGraph(fd, data, size);
 }
 
-void CSRGraph::transpose(CSRGraph* output) {
-  auto nv = numVerts();
-
-  auto oVerts = output->verts;
-  memset(oVerts, 0, sizeof(CSRVertex) * (nv + 1));
-
-  for(int64_t i=0; i<nv; ++i) {
-    for(auto arc=arcBegin(i); arc<arcEnd(i); ++arc) {
-      oVerts[arc->target+1].offset++;
-    }
-  }
-
-  for(int64_t i=1; i<=nv; ++i) {
-    oVerts[i].offset += oVerts[i-1].offset;
-  }
-
-  auto oArcs = output->arcs;
-  for(int64_t i=0; i<nv; ++i) {
-    for(auto arc=arcBegin(i); arc<arcEnd(i); ++arc) {
-      auto oArc = &oArcs[oVerts[arc->target].offset++];
-      oArc->target = static_cast<VertexId>(i);
-      oArc->cost = arc->cost;
-    }
-  }
-
-  for(int64_t i=nv; i>0; --i) {
-    oVerts[i].offset = oVerts[i-1].offset;
-  }
-
-  oVerts[0].offset = 0;
-}
-
 void CSRGraph::close() {
   if(fd < 0) {
     free(data);
@@ -210,4 +178,37 @@ CSRGraph* CSRGraph::fromArcList(
   while(prev < numVerts) {
     g_verts[++prev].offset = static_cast<int64_t>(numArcs);
   }
+
+  return graph;
+}
+
+CSRGraph* CSRGraph::transpose(const char* path, CSRGraph* graph) {
+  auto nv = graph->numVerts();
+  auto na = graph->numArcs();
+
+  auto output = create(path, nv, na);
+
+  auto oVerts = output->verts;
+  memset(oVerts, 0, sizeof(CSRVertex) * (nv + 1));
+
+  for(int64_t i=0; i<nv; ++i) {
+    for(auto arc=graph->arcBegin(i); arc<graph->arcEnd(i); ++arc) {
+      ++oVerts[arc->target].offset;
+    }
+  }
+
+  for(int64_t i=1; i<=nv; ++i) {
+    oVerts[i].offset += oVerts[i-1].offset;
+  }
+
+  auto oArcs = output->arcs;
+  for(int64_t i=nv-1; i>=0; --i) {
+    for(auto arc=graph->arcBegin(i); arc<graph->arcEnd(i); ++arc) {
+      auto oArc = &oArcs[--oVerts[arc->target].offset];
+      oArc->target = static_cast<VertexId>(i);
+      oArc->cost = arc->cost;
+    }
+  }
+
+  return output;
 }

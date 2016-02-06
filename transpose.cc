@@ -17,15 +17,10 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  auto numVerts = input->header->numVerts;
-  auto numArcs = input->header->numArcs;
-
-  auto output = CSRGraph::create(argv[2], numVerts, numArcs);
+  auto output = CSRGraph::transpose(argv[2], input);
   if(output == NULL) {
     return -1;
   }
-
-  input->transpose(output);
 
   input->close();
   output->close();

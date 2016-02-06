@@ -36,12 +36,8 @@ namespace SPUD {
     CSRArc* arcBegin(VertexId i) { return arcs + verts[i].offset; }
     CSRArc* arcEnd(VertexId i) { return arcs + verts[i+1].offset; }
 
-    void transpose(CSRGraph* output);
-
     void print();
     void close();
-
-    std::ostream& operator<<(std::ostream& in) const;
 
     //Converts an arc list into a CSR graph
     static CSRGraph* fromArcList(
@@ -51,6 +47,7 @@ namespace SPUD {
       Arc* arcs);
     static CSRGraph* create(const char*, int64_t numVerts, int64_t numArcs);
     static CSRGraph* read(const char*);
+    static CSRGraph* transpose(const char*, CSRGraph*);
 
   private:
     CSRGraph(int fd, void* data, size_t dataLength);
