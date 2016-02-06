@@ -44,11 +44,6 @@ template<typename T> void insertLabel(
   VertexId hub,
   Cost cost) {
   DynamicLabel label = { hub, cost };
-
-  std::cout << "\t\tbefore insert - ";
-  printLabels(labels);
-  std::cout << std::endl;
-
   labels.insert(
     std::lower_bound(
       labels.begin(),
@@ -58,11 +53,6 @@ template<typename T> void insertLabel(
         return a.hub < b.hub;
       }),
     label);
-
-  std::cout << "\t\tafter insert - ";
-  printLabels(labels);
-  std::cout << std::endl;
-
 }
 
 void DynamicIndex::print() {
@@ -83,9 +73,7 @@ DynamicIndex* DynamicIndex::create(CSRGraph* adj, CSRGraph* transpose) {
   Crawler crawler(index->numVerts());
 
   auto crawl = [&](auto matrix, auto start, auto visit) {
-    std::cout << "start: " << start << std::endl;
     crawler.crawl(start, [&](VertexId v, Cost p) {
-      std::cout << "\tvisit: " << v << " @ " << p << std::endl;
       if(visit(v, p)) {
         auto arcBegin = matrix->arcBegin(v);
         auto arcEnd = matrix->arcEnd(v);
@@ -103,13 +91,10 @@ DynamicIndex* DynamicIndex::create(CSRGraph* adj, CSRGraph* transpose) {
 
   auto addForwardLabels = [&](VertexId start) {
     crawl(adj, start, [&](VertexId v, Cost p) {
-      std::cout << hubDistance(index->vertexLabels[start].outLabels,
-                     index->vertexLabels[v].inLabels) << std::endl;
       if(hubDistance(index->vertexLabels[start].outLabels,
                      index->vertexLabels[v].inLabels) <= p) {
         return false;
       }
-      std::cout << "insert label" << std::endl;
       insertLabel(index->vertexLabels[v].inLabels, start, p);
       return true;
     });
