@@ -9,6 +9,7 @@
 
 namespace SPUD {
   #pragma pack(1)
+
   struct NAVHeader {
     int64_t numVerts;
     int64_t numLabels;
@@ -19,13 +20,14 @@ namespace SPUD {
     int64_t inCount;
     int64_t outCount;
   };
+
   #pragma pack(0)
 
   struct NAVHalfLabel {
     int64_t count;
     VertexId* hub;
     Cost* cost;
-  }
+  };
 
   struct NAVLabel {
     NAVHalfLabel in, out;
@@ -41,12 +43,14 @@ namespace SPUD {
     size_t dataLength;
     void* data;
 
-    int64_t numVerts() const { return header->numVerts; }
+    int64_t numVerts() { return header->numVerts; }
 
-    Cost distance(VertexId start, VertexId end) const {
+    std::pair<VertexId, Cost> hubQuery(VertexId start, VertexId end);
+
+    Cost distance(VertexId start, VertexId end) {
       return hubQuery(start, end).second;
     }
-    std::pair<VertexId, Cost> hubQuery(VertexId start, VertexId end) const;
+
 
     void print();
     void close();
@@ -67,8 +71,8 @@ namespace SPUD {
       fd(fd_),
       dataLength(dataLength_),
       data(data_),
-      header(data_),
-      verts(static_cast<NAVVertex*>((char*)data_ + sizeof(NAVHeader)),
+      header(static_cast<NAVHeader*>(data_)),
+      verts(reinterpret_cast<NAVVertex*>((char*)data_ + sizeof(NAVHeader))),
       labels(new NAVLabel[header->numVerts]) {}
   };
 }

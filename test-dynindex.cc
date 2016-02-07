@@ -3,6 +3,7 @@
 #include "graph.h"
 #include "csr.h"
 #include "dynindex.h"
+#include "nav.h"
 #include "generate.h"
 
 using namespace SPUD;
@@ -19,6 +20,10 @@ int main(int argc, char** argv) {
   auto index = DynamicIndex::create(graph, graphT);
   std::cout << "index: " << std::endl;
   index->print();
+
+  auto nav = NAVIndex::fromDynamicIndex(NULL, index);
+  std::cout << "nav data: " << std::endl;
+  nav->print();
 
   return 0;
 }

@@ -1,3 +1,10 @@
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <cmath>
 #include <iostream>
 
 #include "nav.h"
@@ -7,8 +14,10 @@ using namespace SPUD;
 std::pair<VertexId, Cost> NAVIndex::hubQuery(VertexId start, VertexId end) {
   auto out = labels[start].out;
   auto inp = labels[end].in;
-  int64_t aPtr = 0, bPtr = 0,
-          aCount = out.count, bCount = inp.count;
+  int64_t aPtr = 0;
+  int64_t bPtr = 0;
+  int64_t aCount = out.count;
+  int64_t bCount = inp.count;
   VertexId hub = -1;
   Cost distance = INFINITY;
   while(aPtr < aCount && bPtr < bCount) {
@@ -26,17 +35,16 @@ std::pair<VertexId, Cost> NAVIndex::hubQuery(VertexId start, VertexId end) {
       }
     }
   }
-  return make_pair(hub, distance);
+  return std::make_pair(hub, distance);
 }
-
 
 void NAVIndex::print()  {
   auto printHalfLabel = [](const char* prefix, auto l) {
     for(int64_t i=0; i<l.count; ++i) {
       std::cout << prefix << l.hub[i] << ' ' << l.cost[i] << std::endl;
     }
-  }
-  for(int64_t i=0; i<numVerts; ++i) {
+  };
+  for(int64_t i=0; i<numVerts(); ++i) {
     printHalfLabel("\t<- ", labels[i].in);
     printHalfLabel("\t-> ", labels[i].out);
   }
@@ -99,7 +107,7 @@ NAVIndex* NAVIndex::create(
     data = malloc(size);
   }
 
-  NAVHeader* header = static_cast<NAVHeader*>data;
+  NAVHeader* header = static_cast<NAVHeader*>(data);
   header->numVerts = numVerts;
   header->numLabels = numLabels;
 
@@ -140,19 +148,19 @@ NAVIndex* NAVIndex::read(const char* path) {
     auto inCount = offset.inCount;
     auto outCount = offset.outCount;
 
-    char* ptr = data;
+    auto ptr = reinterpret_cast<char*>(data);
     ptr += offset.labelOffset;
 
     label.in.count = inCount;
-    label.in.hub = static_cast<VertexId*>(ptr);
+    label.in.hub = reinterpret_cast<VertexId*>(ptr);
     ptr += inCount * sizeof(VertexId);
-    label.in.cost = static_cast<Cost*>(ptr);
+    label.in.cost = reinterpret_cast<Cost*>(ptr);
     ptr += inCount * sizeof(Cost);
 
     label.out.count = outCount;
-    label.out.hub = static_cast<VertexId*>(ptr);
+    label.out.hub = reinterpret_cast<VertexId*>(ptr);
     ptr += outCount * sizeof(VertexId);
-    label.out.cost = static_cast<Cost*>(ptr);
+    label.out.cost = reinterpret_cast<Cost*>(ptr);
     ptr += outCount * sizeof(Cost);
   }
 
@@ -175,7 +183,7 @@ NAVIndex* NAVIndex::fromDynamicIndex(const char* path, DynamicIndex* index) {
 
   void* ptr = result->data;
 
-  auto fillHalfLabel = [](auto& halfLabel, auto& dynamicLabel) {
+  auto fillHalfLabel = [&](auto& halfLabel, auto& dynamicLabel) {
     halfLabel.count = dynamicLabel.size();
 
     VertexId* ids = static_cast<VertexId*>(ptr);
@@ -185,19 +193,19 @@ NAVIndex* NAVIndex::fromDynamicIndex(const char* path, DynamicIndex* index) {
 
     Cost* costs = reinterpret_cast<Cost*>(ids);
     for(auto l : dynamicLabel) {
-      *(costs++) = l;
+      *(costs++) = l.cost;
     }
-    
+
     ptr = reinterpret_cast<void*>(costs);
   };
 
   for(int64_t i=0; i<numVerts; ++i) {
     auto& dynLabel = index->vertexLabels[i];
     auto& navLabel = result->labels[i];
-
     auto& vert = result->verts[i];
 
-    vert.labelOffset = static_cast<int64_t>(ptr - data);
+    vert.labelOffset = static_cast<int64_t>(
+      reinterpret_cast<char*>(ptr) - reinterpret_cast<char*>(result->data));
     vert.inCount = dynLabel.inLabels.size();
     vert.outCount = dynLabel.outLabels.size();
 

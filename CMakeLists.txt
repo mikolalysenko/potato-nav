@@ -8,4 +8,9 @@ add_executable(csr2arc csr2arc.cc csr.cc)
 add_executable(gen-graph gen-graph.cc)
 add_executable(sssp sssp.cc csr.cc)
 add_executable(transpose transpose.cc csr.cc)
-add_executable(test-dynindex test-dynindex.cc csr.cc generate.cc dynindex.cc)
+add_executable(test-dynindex
+  test-dynindex.cc
+  csr.cc
+  generate.cc
+  dynindex.cc
+  nav.cc)
