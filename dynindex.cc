@@ -57,13 +57,23 @@ template<typename T> void insertLabel(
 
 void DynamicIndex::print() {
   for(int64_t i=0; i<numVerts(); ++i) {
-    std::cout << i << ':' << std::endl;
-    for(auto label : vertexLabels[i].outLabels) {
-      std::cout << "\t-> " << label.hub << '\t' << label.cost << std::endl;
+    std::cout << "{\"in\":[";
+    for(int64_t j=0; j<vertexLabels[i].outLabels.size(); ++j) {
+      if(j > 0) {
+        std::cout << ',';
+      }
+      auto label = vertexLabels[i].outLabels[j];
+      std::cout << '[' << label.hub << ',' << label.cost << ']';
     }
-    for(auto label : vertexLabels[i].inLabels) {
-      std::cout << "\t<- " << label.hub << '\t' << label.cost << std::endl;
+    std::cout << "],\"out\":[";
+    for(int64_t j=0; j<vertexLabels[i].inLabels.size(); ++j) {
+      if(j > 0) {
+        std::cout << ',';
+      }
+      auto label = vertexLabels[i].inLabels[j];
+      std::cout << '[' << label.hub << ',' << label.cost << ']';
     }
+    std::cout << "]}" << std::endl;
   }
 }
 
